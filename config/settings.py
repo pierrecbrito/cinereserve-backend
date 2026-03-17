@@ -16,7 +16,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'core',
+    'accounts',
+    'catalog',
+    'cinemas',
+    'showtimes',
+    'bookings',
+    'tickets',
 ]
 
 MIDDLEWARE = [
@@ -48,18 +55,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+DB_ENGINE = config('DB_ENGINE', default='django.db.backends.postgresql')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='cinereserve'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+        'ENGINE': DB_ENGINE,
+        'NAME': config('DB_NAME', default='cinereserve') if DB_ENGINE != 'django.db.backends.sqlite3' else BASE_DIR / 'db.sqlite3',
+        'USER': config('DB_USER', default='postgres') if DB_ENGINE != 'django.db.backends.sqlite3' else '',
+        'PASSWORD': config('DB_PASSWORD', default='') if DB_ENGINE != 'django.db.backends.sqlite3' else '',
+        'HOST': config('DB_HOST', default='localhost') if DB_ENGINE != 'django.db.backends.sqlite3' else '',
+        'PORT': config('DB_PORT', default='5432') if DB_ENGINE != 'django.db.backends.sqlite3' else '',
         'OPTIONS': {
             'client_encoding': 'UTF8',
             'connect_timeout': 10,
-        },
+        } if DB_ENGINE != 'django.db.backends.sqlite3' else {},
         'CONN_MAX_AGE': 600,
     }
 }
@@ -98,6 +107,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': [
@@ -122,3 +132,10 @@ CACHES = {
 }
 
 AUTH_USER_MODEL = 'core.User'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'CineReserve API',
+    'DESCRIPTION': 'High-performance REST API for cinema sessions, reservations, and tickets.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
